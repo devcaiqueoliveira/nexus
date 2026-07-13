@@ -2,10 +2,7 @@ package com.devcaiqueoliveira.nexus_api.entity;
 
 import com.devcaiqueoliveira.nexus_api.entity.enums.StudySessionStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -29,10 +26,12 @@ public class StudySession {
     private LocalDateTime startedAt;
 
     @Column(name = "ended_at")
+    @Setter
     private LocalDateTime endedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 50)
+    @Setter
     private StudySessionStatus status;
 
     @Column(name = "created_at", nullable = false, updatable = false)

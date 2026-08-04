@@ -1,6 +1,8 @@
 spring:
   application:
     name: nexus-api
+  messages:
+    encoding: UTF-8
 
   datasource:
     url: jdbc:postgresql://localhost:5432/nexus_db

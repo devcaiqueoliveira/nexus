@@ -1,5 +1,6 @@
 package com.devcaiqueoliveira.nexus_api.exception;
 
+import com.devcaiqueoliveira.nexus_api.exception.exceptions.DuplicateResourceException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.coyote.Response;
@@ -47,6 +48,18 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT.value(),
                 "Database Conflict",
                 "Operação não permitida. Verifique se os dados já existem ou estão vinculados a outro registro.",
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<StandardErrorResponse> handleDuplicateResource(DuplicateResourceException ex, HttpServletRequest request) {
+        StandardErrorResponse error = new StandardErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                ex.getMessage(),
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);

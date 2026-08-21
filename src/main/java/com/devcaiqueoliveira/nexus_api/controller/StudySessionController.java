@@ -34,7 +34,7 @@ public class StudySessionController {
     }
 
     @PatchMapping("/{id}/finish")
-    public ResponseEntity<StudySessionResponse> finish(UUID id) {
+    public ResponseEntity<StudySessionResponse> finish(@PathVariable UUID id) {
 
         StudySessionResponse finishedStudySession = studySessionService.finishSession(id);
 

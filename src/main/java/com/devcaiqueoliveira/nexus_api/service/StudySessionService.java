@@ -38,7 +38,7 @@ public class StudySessionService {
 
         StudySession savedSession = studySessionRepository.save(studySession);
 
-        return new StudySessionResponse(studySession);
+        return new StudySessionResponse(savedSession);
 
     }
 

@@ -5,6 +5,7 @@ import com.devcaiqueoliveira.nexus_api.dto.UserResponse;
 import com.devcaiqueoliveira.nexus_api.entity.User;
 import com.devcaiqueoliveira.nexus_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,13 +13,17 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserResponse createUser(UserRequest request) {
+
+        String encryptedPassword = passwordEncoder.encode(request.password());
+
         User user = new User(
                 null,
                 request.name(),
                 request.email(),
-                request.password(),
+                encryptedPassword,
                 null
         );
 

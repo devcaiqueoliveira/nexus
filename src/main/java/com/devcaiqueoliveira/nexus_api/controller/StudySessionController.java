@@ -3,6 +3,7 @@ package com.devcaiqueoliveira.nexus_api.controller;
 import com.devcaiqueoliveira.nexus_api.dto.StudySessionResponse;
 import com.devcaiqueoliveira.nexus_api.dto.StudySessionStart;
 import com.devcaiqueoliveira.nexus_api.service.StudySessionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class StudySessionController {
     private final StudySessionService studySessionService;
 
     @PostMapping
-    public ResponseEntity<StudySessionResponse> start(@RequestBody StudySessionStart studySession) {
+    public ResponseEntity<StudySessionResponse> start(@RequestBody @Valid StudySessionStart studySession) {
 
         StudySessionResponse startedStudySession = studySessionService.startSession(studySession);
 

@@ -27,11 +27,9 @@ public class UserService {
         String encryptedPassword = passwordEncoder.encode(request.password());
 
         User user = new User(
-                null,
                 request.name(),
                 request.email(),
-                encryptedPassword,
-                null
+                encryptedPassword
         );
 
         User savedUser = userRepository.save(user);

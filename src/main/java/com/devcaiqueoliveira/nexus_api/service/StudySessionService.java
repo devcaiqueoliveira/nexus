@@ -32,12 +32,8 @@ public class StudySessionService {
         }
 
         StudySession studySession = new StudySession(
-                    null,
                     subject,
-                    LocalDateTime.now(),
-                    null,
-                    null,
-                    null
+                    LocalDateTime.now()
             );
 
         StudySession savedSession = studySessionRepository.save(studySession);

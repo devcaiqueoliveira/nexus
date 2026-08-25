@@ -13,7 +13,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "subjects")
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class Subject {
@@ -36,6 +35,13 @@ public class Subject {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public Subject(String name, String description, Integer targetHours, User user) {
+        this.name = name;
+        this.description = description;
+        this.targetHours = targetHours;
+        this.user = user;
+    }
 
     @PrePersist
     private void prePersist() {

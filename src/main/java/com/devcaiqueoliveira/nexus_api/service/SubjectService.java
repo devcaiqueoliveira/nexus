@@ -9,6 +9,7 @@ import com.devcaiqueoliveira.nexus_api.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class SubjectService {
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public SubjectResponse createSubject(SubjectRequest subjectRequest) {
 
         User user = userRepository.findById(subjectRequest.userId())

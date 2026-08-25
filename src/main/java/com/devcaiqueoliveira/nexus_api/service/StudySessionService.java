@@ -27,17 +27,20 @@ public class StudySessionService {
         Subject subject = subjectRepository.findById(studySessionStart.subjectId())
                 .orElseThrow(() -> new EntityNotFoundException("Disciplina não encontrada com o ID: " + studySessionStart.subjectId()));
 
+        if (studySessionRepository.existsBySubjectIdAndStatus(subject.getId(), StudySessionStatus.IN_PROGRESS)) {
+            throw new IllegalStateException("Já existe uma sessão de estudos vigente.");
+        }
+
         StudySession studySession = new StudySession(
-                null,
-                subject,
-                LocalDateTime.now(),
-                null,
-                null,
-                null
-        );
+                    null,
+                    subject,
+                    LocalDateTime.now(),
+                    null,
+                    null,
+                    null
+            );
 
         StudySession savedSession = studySessionRepository.save(studySession);
-
         return new StudySessionResponse(savedSession);
 
     }

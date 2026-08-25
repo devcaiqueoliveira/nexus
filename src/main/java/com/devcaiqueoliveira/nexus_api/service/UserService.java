@@ -5,10 +5,13 @@ import com.devcaiqueoliveira.nexus_api.dto.UserResponse;
 import com.devcaiqueoliveira.nexus_api.entity.User;
 import com.devcaiqueoliveira.nexus_api.exception.exceptions.DuplicateResourceException;
 import com.devcaiqueoliveira.nexus_api.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,5 +37,11 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
         return new UserResponse(savedUser);
+    }
+
+    public UserResponse findById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o ID: " + id));
+        return new UserResponse(user);
     }
 }

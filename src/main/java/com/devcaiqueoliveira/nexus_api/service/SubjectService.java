@@ -11,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class SubjectService {
@@ -34,6 +37,18 @@ public class SubjectService {
         Subject savedSubject = subjectRepository.save(createdSubject);
 
         return new SubjectResponse(savedSubject);
+    }
+
+    public List<SubjectResponse> findAllByUserId(UUID userId) {
+        return subjectRepository.findAllByUserId(userId).stream()
+                .map(SubjectResponse::new)
+                .toList();
+    }
+
+    public SubjectResponse findById(UUID id) {
+        Subject subject = subjectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Matéria não encontrada com o ID: " + id));
+        return new SubjectResponse(subject);
     }
 
 }

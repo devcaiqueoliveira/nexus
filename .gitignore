@@ -1,5 +1,6 @@
 HELP.md
 GITHUB_ISSUES.md
+SCALABILITY_AND_MAINTAINABILITY.md
 target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

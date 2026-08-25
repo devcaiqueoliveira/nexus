@@ -11,7 +11,6 @@ import java.util.UUID;
 @Table(name = "study_sessions")
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class StudySession {
     @Id
@@ -36,6 +35,11 @@ public class StudySession {
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    public StudySession(Subject subject, LocalDateTime startedAt) {
+        this.subject = subject;
+        this.startedAt = startedAt;
+    }
 
     @PrePersist
     private void prePersist() {

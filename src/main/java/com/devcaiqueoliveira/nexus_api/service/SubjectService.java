@@ -25,11 +25,9 @@ public class SubjectService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o ID: " + subjectRequest.userId()));
 
         Subject createdSubject = new Subject(
-                null,
                 subjectRequest.name(),
                 subjectRequest.description(),
                 subjectRequest.targetHours(),
-                null,
                 user
         );
 

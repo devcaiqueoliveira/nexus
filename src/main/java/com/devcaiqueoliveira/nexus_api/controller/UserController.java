@@ -3,6 +3,8 @@ package com.devcaiqueoliveira.nexus_api.controller;
 import com.devcaiqueoliveira.nexus_api.dto.UserRequest;
 import com.devcaiqueoliveira.nexus_api.dto.UserResponse;
 import com.devcaiqueoliveira.nexus_api.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +17,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Tag(name = "Usuários", description = "Operações de cadastro e consulta de usuários")
 public class UserController {
 
     private final UserService userService;
 
     @PostMapping
+    @Operation(summary = "Criar usuário")
     public ResponseEntity<UserResponse> createUser(@RequestBody @Valid UserRequest request) {
         UserResponse createdUser = userService.createUser(request);
 
@@ -32,6 +36,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Buscar usuário por ID")
     public ResponseEntity<UserResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.findById(id));
     }

@@ -9,6 +9,8 @@ import com.devcaiqueoliveira.nexus_api.repository.StudySessionRepository;
 import com.devcaiqueoliveira.nexus_api.repository.SubjectRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +27,7 @@ public class StudySessionService {
     @Transactional
     public StudySessionResponse startSession(StudySessionStart studySessionStart) {
         Subject subject = subjectRepository.findById(studySessionStart.subjectId())
-                .orElseThrow(() -> new EntityNotFoundException("Disciplina não encontrada com o ID: " + studySessionStart.subjectId()));
+                .orElseThrow(() -> new EntityNotFoundException("Disciplina não encontrada"));
 
         if (studySessionRepository.existsBySubjectIdAndStatus(subject.getId(), StudySessionStatus.IN_PROGRESS)) {
             throw new IllegalStateException("Já existe uma sessão de estudos vigente.");
@@ -57,6 +59,23 @@ public class StudySessionService {
         StudySession updatedSession = studySessionRepository.save(studySession);
 
         return new StudySessionResponse(updatedSession);
+    }
+
+    public StudySessionResponse findById(UUID id) {
+        StudySession studySession = studySessionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Sessão de estudos não encontrada"));
+        return new StudySessionResponse(studySession);
+    }
+
+    @Transactional
+    public void deleteStudySession(UUID id) {
+        StudySession studySession = studySessionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Sessão de estudos não encontrada"));
+        studySessionRepository.delete(studySession);
+    }
+
+    public Page<StudySessionResponse> findAllBySubjectId(UUID subjectId, Pageable pageable) {
+       return studySessionRepository.findAllBySubjectId(subjectId, pageable).map(StudySessionResponse::new);
     }
 
 }

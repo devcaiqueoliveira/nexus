@@ -5,6 +5,8 @@ import com.devcaiqueoliveira.nexus_api.dto.StudySessionStart;
 import com.devcaiqueoliveira.nexus_api.service.StudySessionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -41,5 +43,21 @@ public class StudySessionController {
 
         return ResponseEntity.ok(finishedStudySession);
 
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<StudySessionResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(studySessionService.findById(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
+        studySessionService.deleteStudySession(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<StudySessionResponse>> findAllBySubjectId(@RequestParam UUID subjectId, Pageable pageable) {
+        return ResponseEntity.ok(studySessionService.findAllBySubjectId(subjectId, pageable));
     }
 }

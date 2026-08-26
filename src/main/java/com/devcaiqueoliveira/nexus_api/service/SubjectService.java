@@ -2,6 +2,7 @@ package com.devcaiqueoliveira.nexus_api.service;
 
 import com.devcaiqueoliveira.nexus_api.dto.SubjectRequest;
 import com.devcaiqueoliveira.nexus_api.dto.SubjectResponse;
+import com.devcaiqueoliveira.nexus_api.dto.SubjectUpdateRequest;
 import com.devcaiqueoliveira.nexus_api.entity.Subject;
 import com.devcaiqueoliveira.nexus_api.entity.User;
 import com.devcaiqueoliveira.nexus_api.repository.SubjectRepository;
@@ -25,7 +26,7 @@ public class SubjectService {
     public SubjectResponse createSubject(SubjectRequest subjectRequest) {
 
         User user = userRepository.findById(subjectRequest.userId())
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o ID: " + subjectRequest.userId()));
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
         Subject createdSubject = new Subject(
                 subjectRequest.name(),
@@ -47,8 +48,32 @@ public class SubjectService {
 
     public SubjectResponse findById(UUID id) {
         Subject subject = subjectRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Matéria não encontrada com o ID: " + id));
+                .orElseThrow(() -> new EntityNotFoundException("Matéria não encontrada"));
         return new SubjectResponse(subject);
+    }
+
+    @Transactional
+    public SubjectResponse updateSubject(UUID id, SubjectUpdateRequest subjectRequest) {
+
+        Subject subjectToUpdate = subjectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Matéria não encontrada"));
+
+        subjectToUpdate.setName(subjectRequest.name());
+        subjectToUpdate.setDescription(subjectRequest.description());
+        subjectToUpdate.setTargetHours(subjectRequest.targetHours());
+
+        Subject savedSubject = subjectRepository.save(subjectToUpdate);
+
+        return new SubjectResponse(savedSubject);
+    }
+
+    @Transactional
+    public void deleteSubject(UUID id) {
+
+        Subject subjectToDelete = subjectRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Matéria não encontrada"));
+
+        subjectRepository.delete(subjectToDelete);
     }
 
 }

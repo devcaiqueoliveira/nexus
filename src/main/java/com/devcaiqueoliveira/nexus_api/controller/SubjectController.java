@@ -2,6 +2,7 @@ package com.devcaiqueoliveira.nexus_api.controller;
 
 import com.devcaiqueoliveira.nexus_api.dto.SubjectRequest;
 import com.devcaiqueoliveira.nexus_api.dto.SubjectResponse;
+import com.devcaiqueoliveira.nexus_api.dto.SubjectUpdateRequest;
 import com.devcaiqueoliveira.nexus_api.service.SubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +42,16 @@ public class SubjectController {
     @GetMapping("/{id}")
     public ResponseEntity<SubjectResponse> findById(@PathVariable UUID id) {
         return ResponseEntity.ok(subjectService.findById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SubjectResponse> updateSubject(@PathVariable UUID id, @RequestBody @Valid SubjectUpdateRequest subjectRequest) {
+        return ResponseEntity.ok(subjectService.updateSubject(id, subjectRequest));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSubject(@PathVariable UUID id) {
+        subjectService.deleteSubject(id);
+        return ResponseEntity.noContent().build();
     }
 }

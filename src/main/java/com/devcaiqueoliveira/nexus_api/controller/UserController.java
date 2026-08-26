@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -28,5 +29,10 @@ public class UserController {
                 .toUri();
 
         return ResponseEntity.created(uri).body(createdUser);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(userService.findById(id));
     }
 }

@@ -1,10 +1,7 @@
 package com.devcaiqueoliveira.nexus_api.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,11 +19,14 @@ public class Subject {
     private UUID id;
 
     @Column(nullable = false, length = 100)
+    @Setter
     private String name;
 
+    @Setter
     private String description;
 
     @Column(name = "target_hours", nullable = false)
+    @Setter
     private Integer targetHours;
 
     @Column(name = "created_at", nullable = false, updatable = false)

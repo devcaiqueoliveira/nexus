@@ -2,17 +2,17 @@ package com.devcaiqueoliveira.nexus_api.controller;
 
 import com.devcaiqueoliveira.nexus_api.dto.SubjectRequest;
 import com.devcaiqueoliveira.nexus_api.dto.SubjectResponse;
+import com.devcaiqueoliveira.nexus_api.dto.SubjectUpdateRequest;
 import com.devcaiqueoliveira.nexus_api.service.SubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/subjects")
@@ -31,5 +31,27 @@ public class SubjectController {
                 .toUri();
 
         return ResponseEntity.created(uri).body(createdSubject);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<SubjectResponse>> findAllByUserId(@RequestParam UUID userId) {
+        List<SubjectResponse> subjects = subjectService.findAllByUserId(userId);
+        return ResponseEntity.ok(subjects);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SubjectResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(subjectService.findById(id));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SubjectResponse> updateSubject(@PathVariable UUID id, @RequestBody @Valid SubjectUpdateRequest subjectRequest) {
+        return ResponseEntity.ok(subjectService.updateSubject(id, subjectRequest));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteSubject(@PathVariable UUID id) {
+        subjectService.deleteSubject(id);
+        return ResponseEntity.noContent().build();
     }
 }

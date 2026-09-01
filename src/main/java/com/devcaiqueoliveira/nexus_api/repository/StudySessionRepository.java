@@ -6,10 +6,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface StudySessionRepository extends JpaRepository<StudySession, UUID> {
 
     boolean existsBySubjectIdAndStatus(UUID subjectId, StudySessionStatus status);
     Page<StudySession> findAllBySubjectId(UUID subjectId, Pageable pageable);
+    List<StudySession> findAllBySubjectIdAndStatus(UUID subjectId, StudySessionStatus status);
 }

@@ -1,5 +1,6 @@
 package com.devcaiqueoliveira.nexus_api.controller;
 
+import com.devcaiqueoliveira.nexus_api.dto.SubjectProgressResponse;
 import com.devcaiqueoliveira.nexus_api.dto.SubjectRequest;
 import com.devcaiqueoliveira.nexus_api.dto.SubjectResponse;
 import com.devcaiqueoliveira.nexus_api.dto.SubjectUpdateRequest;
@@ -61,5 +62,12 @@ public class SubjectController {
     public ResponseEntity<Void> deleteSubject(@PathVariable UUID id) {
         subjectService.deleteSubject(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/progress")
+    @Operation(summary = "Obter progresso de horas estudadas da matéria")
+    public ResponseEntity<SubjectProgressResponse> getSubjectProgress(@PathVariable UUID id) {
+        SubjectProgressResponse subjectProgress = subjectService.getSubjectProgress(id);
+        return ResponseEntity.ok(subjectProgress);
     }
 }

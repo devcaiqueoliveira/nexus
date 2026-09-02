@@ -5,6 +5,7 @@ import com.devcaiqueoliveira.nexus_api.dto.AuthenticationResponse;
 import com.devcaiqueoliveira.nexus_api.entity.User;
 import com.devcaiqueoliveira.nexus_api.service.TokenService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,22 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthenticationController {
 
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
-
-    public AuthenticationController(AuthenticationManager authenticationManager, TokenService tokenService) {
-        this.authenticationManager = authenticationManager;
-        this.tokenService = tokenService;
-    }
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid AuthenticationRequest request) {
 
         UsernamePasswordAuthenticationToken usernamePassword = new UsernamePasswordAuthenticationToken(request.email(), request.password());
 
-        Authentication authenticate = this.authenticationManager.authenticate(usernamePassword);
+        Authentication authenticate = authenticationManager.authenticate(usernamePassword);
 
         String token = tokenService.generateToken((User) authenticate.getPrincipal());
 

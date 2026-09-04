@@ -1,9 +1,9 @@
 package com.devcaiqueoliveira.nexus_api.exception;
 
 import com.devcaiqueoliveira.nexus_api.exception.exceptions.DuplicateResourceException;
+import com.devcaiqueoliveira.nexus_api.exception.exceptions.ForbiddenActionException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.coyote.Response;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -81,5 +81,19 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(ForbiddenActionException.class)
+    public ResponseEntity<StandardErrorResponse> handleForbiddenActionErrors(ForbiddenActionException ex, HttpServletRequest request) {
+
+        StandardErrorResponse error = new StandardErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden Action",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 }

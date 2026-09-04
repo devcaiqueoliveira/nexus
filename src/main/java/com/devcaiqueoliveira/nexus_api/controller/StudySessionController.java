@@ -2,6 +2,7 @@ package com.devcaiqueoliveira.nexus_api.controller;
 
 import com.devcaiqueoliveira.nexus_api.dto.StudySessionResponse;
 import com.devcaiqueoliveira.nexus_api.dto.StudySessionStart;
+import com.devcaiqueoliveira.nexus_api.entity.User;
 import com.devcaiqueoliveira.nexus_api.service.StudySessionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -10,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -26,9 +28,11 @@ public class StudySessionController {
 
     @PostMapping
     @Operation(summary = "Iniciar sessão de estudo")
-    public ResponseEntity<StudySessionResponse> start(@RequestBody @Valid StudySessionStart studySession) {
+    public ResponseEntity<StudySessionResponse> start(
+            @RequestBody @Valid StudySessionStart studySession,
+            @AuthenticationPrincipal User loggedUser) {
 
-        StudySessionResponse startedStudySession = studySessionService.startSession(studySession);
+        StudySessionResponse startedStudySession = studySessionService.startSession(studySession, loggedUser.getId());
 
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -42,9 +46,11 @@ public class StudySessionController {
 
     @PatchMapping("/{id}/finish")
     @Operation(summary = "Finalizar sessão de estudo")
-    public ResponseEntity<StudySessionResponse> finish(@PathVariable UUID id) {
+    public ResponseEntity<StudySessionResponse> finish(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User loggedUser) {
 
-        StudySessionResponse finishedStudySession = studySessionService.finishSession(id);
+        StudySessionResponse finishedStudySession = studySessionService.finishSession(id, loggedUser.getId());
 
         return ResponseEntity.ok(finishedStudySession);
 
@@ -52,20 +58,29 @@ public class StudySessionController {
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar sessão de estudo por ID")
-    public ResponseEntity<StudySessionResponse> findById(@PathVariable UUID id) {
-        return ResponseEntity.ok(studySessionService.findById(id));
+    public ResponseEntity<StudySessionResponse> findById(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User loggedUser) {
+
+        return ResponseEntity.ok(studySessionService.findById(id, loggedUser.getId()));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar sessão de estudo por ID")
-    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
-        studySessionService.deleteStudySession(id);
+    public ResponseEntity<Void> deleteById(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal User loggedUser) {
+        studySessionService.deleteStudySession(id, loggedUser.getId());
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
     @Operation(summary = "Listar sessões de estudo por disciplina")
-    public ResponseEntity<Page<StudySessionResponse>> findAllBySubjectId(@RequestParam UUID subjectId, Pageable pageable) {
-        return ResponseEntity.ok(studySessionService.findAllBySubjectId(subjectId, pageable));
+    public ResponseEntity<Page<StudySessionResponse>> findAllBySubjectId(
+            @RequestParam UUID subjectId,
+            Pageable pageable,
+            @AuthenticationPrincipal User loggedUser) {
+
+        return ResponseEntity.ok(studySessionService.findAllBySubjectId(subjectId, pageable, loggedUser.getId()));
     }
 }

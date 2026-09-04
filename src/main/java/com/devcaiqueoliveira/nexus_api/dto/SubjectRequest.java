@@ -16,9 +16,6 @@ public record SubjectRequest(
 
         @NotNull(message = "{subject.targetHours.required}")
         @Positive(message = "{subject.targetHours.positive}")
-        Integer targetHours,
-
-        @NotNull(message = "{subject.userId.required}")
-        UUID userId
+        Integer targetHours
 ) {
 }

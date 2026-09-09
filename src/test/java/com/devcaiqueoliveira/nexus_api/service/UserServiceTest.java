@@ -33,7 +33,7 @@ public class UserServiceTest {
     @Test
     @DisplayName("Deve criar um usúario com sucesso")
     void createUserTest() {
-        UserRequest request = new UserRequest("Teste", "teste@teste.com", "123456")
+        UserRequest request = new UserRequest("Teste", "teste@teste.com", "123456");
 
         when(userRepository.existsByEmail(request.email())).thenReturn(false);
 
@@ -46,5 +46,14 @@ public class UserServiceTest {
         });
 
         UserResponse response = userService.createUser(request);
+
+        assertNotNull(response.id());
+
+        assertEquals(request.name(), response.name());
+        assertEquals(request.email(), response.email());
+
+        verify(userRepository, times(1)).save(any(User.class));
     }
+
+
 }

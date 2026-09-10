@@ -285,8 +285,6 @@ Os próximos passos incluem:
 - criar um sistema de sequência diária de estudos;
 - gerar relatórios por semana, mês ou intervalo personalizado.
 
-Consulte o [roadmap completo](./GITHUB_ISSUES.md) para acompanhar o planejamento técnico e as funcionalidades futuras.
-
 ## Autor
 
-Desenvolvido por [Caique Oliveira](https://github.com/devcaiqueoliveira).
+Desenvolvido por [Caique Oliveira](https://www.devcaiqueoliveira.com.br).

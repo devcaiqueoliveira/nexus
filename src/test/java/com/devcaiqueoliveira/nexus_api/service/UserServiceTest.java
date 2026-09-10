@@ -55,5 +55,47 @@ public class UserServiceTest {
         verify(userRepository, times(1)).save(any(User.class));
     }
 
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar criar usuário com e-mail duplicado")
+    void createUserDuplicateEmailTest() {
+        UserRequest request = new UserRequest("Teste", "teste@teste.com", "123456");
+
+        when(userRepository.existsByEmail(request.email())).thenReturn(true);
+
+        assertThrows(com.devcaiqueoliveira.nexus_api.exception.exceptions.DuplicateResourceException.class, () -> {
+            userService.createUser(request);
+        });
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    @DisplayName("Deve buscar um usuário por ID com sucesso")
+    void findByIdTest() {
+        UUID id = UUID.randomUUID();
+        User user = new User("Teste", "teste@teste.com", "123456");
+        ReflectionTestUtils.setField(user, "id", id);
+
+        when(userRepository.findById(id)).thenReturn(java.util.Optional.of(user));
+
+        UserResponse response = userService.findById(id);
+
+        assertNotNull(response);
+        assertEquals(id, response.id());
+        assertEquals("Teste", response.name());
+        assertEquals("teste@teste.com", response.email());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao buscar usuário inexistente por ID")
+    void findByIdNotFoundTest() {
+        UUID id = UUID.randomUUID();
+
+        when(userRepository.findById(id)).thenReturn(java.util.Optional.empty());
+
+        assertThrows(jakarta.persistence.EntityNotFoundException.class, () -> {
+            userService.findById(id);
+        });
+    }
 
 }

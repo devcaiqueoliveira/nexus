@@ -28,8 +28,7 @@ public class StudySessionService {
     @Transactional
     public StudySessionResponse startSession(StudySessionStart studySessionStart, UUID loggedUserId) {
 
-        Subject subject = subjectRepository.findById(studySessionStart.subjectId())
-                .orElseThrow(() -> new EntityNotFoundException("Disciplina não encontrada"));
+        Subject subject = findOwnedSubject(studySessionStart.subjectId(), loggedUserId);
 
         if (studySessionRepository.existsBySubjectIdAndStatus(subject.getId(), StudySessionStatus.IN_PROGRESS)) {
             throw new IllegalStateException("Já existe uma sessão de estudos vigente");
@@ -39,10 +38,6 @@ public class StudySessionService {
                 subject,
                 LocalDateTime.now()
         );
-
-        if (!studySession.getSubject().getUser().getId().equals(loggedUserId)) {
-            throw new ForbiddenActionException("Você não tem permissão para acessar esta sessão de estudos");
-        }
 
         StudySession savedSession = studySessionRepository.save(studySession);
         return new StudySessionResponse(savedSession);
@@ -93,14 +88,23 @@ public class StudySessionService {
         studySessionRepository.delete(studySession);
     }
 
+    @Transactional(readOnly = true)
     public Page<StudySessionResponse> findAllBySubjectId(UUID subjectId, Pageable pageable, UUID loggedUserId) {
-        Page<StudySession> studySessions = studySessionRepository.findAllBySubjectId(subjectId, pageable);
+        findOwnedSubject(subjectId, loggedUserId);
 
-        if (!studySessions.stream().allMatch(studySession ->
-                studySession.getSubject().getUser().getId().equals(loggedUserId))) {
-            throw new ForbiddenActionException("Você não tem permissão para acessar esta sessão de estudos");
-        }
+        Page<StudySession> studySessions = studySessionRepository.findAllBySubjectId(subjectId, pageable);
         return studySessions.map(StudySessionResponse::new);
+    }
+
+    private Subject findOwnedSubject(UUID subjectId, UUID loggedUserId) {
+        Subject subject = subjectRepository.findById(subjectId)
+                .orElseThrow(() -> new EntityNotFoundException("Disciplina não encontrada"));
+
+        if (!subject.getUser().getId().equals(loggedUserId)) {
+            throw new ForbiddenActionException("Você não tem permissão para acessar esta matéria");
+        }
+
+        return subject;
     }
 
 }

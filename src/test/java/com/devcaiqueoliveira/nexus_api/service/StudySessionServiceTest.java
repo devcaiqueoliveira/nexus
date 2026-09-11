@@ -130,11 +130,11 @@ public class StudySessionServiceTest {
         StudySessionStart request = new StudySessionStart(subjectId);
 
         when(subjectRepository.findById(subjectId)).thenReturn(Optional.of(subject));
-        when(studySessionRepository.existsBySubjectIdAndStatus(subjectId, StudySessionStatus.IN_PROGRESS)).thenReturn(false);
-
         assertThrows(ForbiddenActionException.class, () -> {
             studySessionService.startSession(request, userId);
         });
+        verify(studySessionRepository, never())
+                .existsBySubjectIdAndStatus(any(UUID.class), any(StudySessionStatus.class));
         verify(studySessionRepository, never()).save(any(StudySession.class));
     }
 
@@ -249,6 +249,7 @@ public class StudySessionServiceTest {
         Pageable pageable = PageRequest.of(0, 10);
         Page<StudySession> page = new PageImpl<>(List.of(session), pageable, 1);
 
+        when(subjectRepository.findById(subjectId)).thenReturn(Optional.of(subject));
         when(studySessionRepository.findAllBySubjectId(subjectId, pageable)).thenReturn(page);
 
         Page<StudySessionResponse> responsePage = studySessionService.findAllBySubjectId(subjectId, pageable, userId);
@@ -258,22 +259,20 @@ public class StudySessionServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao listar sessões contendo registro de outro usuário (Forbidden)")
+    @DisplayName("Deve negar a listagem vazia de sessões de uma matéria pertencente a outro usuário")
     void findAllBySubjectIdForbidden() {
         UUID userId = UUID.randomUUID();
         UUID otherUserId = UUID.randomUUID();
         UUID subjectId = UUID.randomUUID();
         User otherUser = createFakeUser(otherUserId);
         Subject subject = createFakeSubject(subjectId, otherUser);
-        StudySession session = createFakeSession(UUID.randomUUID(), subject, StudySessionStatus.COMPLETED);
-
         Pageable pageable = PageRequest.of(0, 10);
-        Page<StudySession> page = new PageImpl<>(List.of(session), pageable, 1);
 
-        when(studySessionRepository.findAllBySubjectId(subjectId, pageable)).thenReturn(page);
+        when(subjectRepository.findById(subjectId)).thenReturn(Optional.of(subject));
 
         assertThrows(ForbiddenActionException.class, () -> {
             studySessionService.findAllBySubjectId(subjectId, pageable, userId);
         });
+        verify(studySessionRepository, never()).findAllBySubjectId(any(UUID.class), any(Pageable.class));
     }
 }

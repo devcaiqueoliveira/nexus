@@ -14,8 +14,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class SecurityFilter extends OncePerRequestFilter {
@@ -28,15 +26,9 @@ public class SecurityFilter extends OncePerRequestFilter {
         String token = recoverToken(request);
 
         if (token != null) {
-            String subject = tokenService.validationToken(token);
-
-            if (!subject.isEmpty()) {
-                User user = userRepository.findById(UUID.fromString(subject)).orElseThrow();
-
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
+            tokenService.validateAndGetUserId(token)
+                    .flatMap(userRepository::findById)
+                    .ifPresent(this::authenticate);
         }
 
         filterChain.doFilter(request, response);
@@ -44,7 +36,22 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private String recoverToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-        if (authHeader == null) return null;
-        return authHeader.replace("Bearer ", "");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return null;
+        }
+
+        String token = authHeader.substring(7);
+        if (token.isBlank() || token.chars().anyMatch(Character::isWhitespace)) {
+            return null;
+        }
+
+        return token;
+    }
+
+    private void authenticate(User user) {
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }

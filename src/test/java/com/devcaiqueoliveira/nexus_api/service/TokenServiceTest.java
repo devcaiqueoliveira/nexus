@@ -8,6 +8,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,8 +20,7 @@ public class TokenServiceTest {
 
     @BeforeEach
     void setUp() {
-        tokenService = new TokenService();
-        ReflectionTestUtils.setField(tokenService, "secret", "my-secret-key");
+        tokenService = new TokenService("my-secret-key");
     }
 
     @Test
@@ -53,10 +54,9 @@ public class TokenServiceTest {
 
         String token = tokenService.generateToken(user);
 
-        String subject = tokenService.validationToken(token);
+        Optional<UUID> userId = tokenService.validateAndGetUserId(token);
 
-        assertNotNull(subject);
-        assertEquals(id.toString(), subject);
+        assertEquals(Optional.of(id), userId);
     }
 
     @Test
@@ -64,10 +64,9 @@ public class TokenServiceTest {
     void validationTokenInvalid() {
         String invalidToken = "invalid.token.here";
 
-        String subject = tokenService.validationToken(invalidToken);
+        Optional<UUID> userId = tokenService.validateAndGetUserId(invalidToken);
 
-        assertNotNull(subject);
-        assertEquals("", subject);
+        assertTrue(userId.isEmpty());
     }
 
     @Test
@@ -77,13 +76,52 @@ public class TokenServiceTest {
         User user = new User("Teste", "teste@teste.com", "123456");
         ReflectionTestUtils.setField(user, "id", id);
 
-        TokenService anotherTokenService = new TokenService();
-        ReflectionTestUtils.setField(anotherTokenService, "secret", "wrong-secret-key");
+        TokenService anotherTokenService = new TokenService("wrong-secret-key");
         String tokenWithWrongSignature = anotherTokenService.generateToken(user);
 
-        String subject = tokenService.validationToken(tokenWithWrongSignature);
+        Optional<UUID> userId = tokenService.validateAndGetUserId(tokenWithWrongSignature);
 
-        assertNotNull(subject);
-        assertEquals("", subject);
+        assertTrue(userId.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Deve rejeitar token expirado")
+    void validationTokenExpired() {
+        String expiredToken = JWT.create()
+                .withIssuer("nexus-api")
+                .withSubject(UUID.randomUUID().toString())
+                .withExpiresAt(Instant.now().minusSeconds(1))
+                .sign(Algorithm.HMAC256("my-secret-key"));
+
+        assertTrue(tokenService.validateAndGetUserId(expiredToken).isEmpty());
+    }
+
+    @Test
+    @DisplayName("Deve rejeitar token com subject que não é UUID")
+    void validationTokenInvalidSubject() {
+        String token = JWT.create()
+                .withIssuer("nexus-api")
+                .withSubject("invalid-user-id")
+                .withExpiresAt(Instant.now().plusSeconds(60))
+                .sign(Algorithm.HMAC256("my-secret-key"));
+
+        assertTrue(tokenService.validateAndGetUserId(token).isEmpty());
+    }
+
+    @Test
+    @DisplayName("Deve rejeitar token sem subject")
+    void validationTokenWithoutSubject() {
+        String token = JWT.create()
+                .withIssuer("nexus-api")
+                .withExpiresAt(Instant.now().plusSeconds(60))
+                .sign(Algorithm.HMAC256("my-secret-key"));
+
+        assertTrue(tokenService.validateAndGetUserId(token).isEmpty());
+    }
+
+    @Test
+    @DisplayName("Deve rejeitar segredo JWT vazio")
+    void blankSecret() {
+        assertThrows(IllegalArgumentException.class, () -> new TokenService(" "));
     }
 }

@@ -1,0 +1,4 @@
+api:
+  security:
+    token:
+      secret: test-only-jwt-secret-for-nexus-api

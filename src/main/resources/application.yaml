@@ -26,4 +26,4 @@ spring:
 api:
   security:
     token:
-      secret: ${JWT_SECRET:development-key}
+      secret: ${JWT_SECRET}

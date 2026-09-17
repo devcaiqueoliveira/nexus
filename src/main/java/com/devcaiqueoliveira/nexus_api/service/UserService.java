@@ -4,6 +4,7 @@ import com.devcaiqueoliveira.nexus_api.dto.UserRequest;
 import com.devcaiqueoliveira.nexus_api.dto.UserResponse;
 import com.devcaiqueoliveira.nexus_api.entity.User;
 import com.devcaiqueoliveira.nexus_api.exception.exceptions.DuplicateResourceException;
+import com.devcaiqueoliveira.nexus_api.exception.exceptions.ForbiddenActionException;
 import com.devcaiqueoliveira.nexus_api.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +40,18 @@ public class UserService {
         return new UserResponse(savedUser);
     }
 
-    public UserResponse findById(UUID id) {
-        User user = userRepository.findById(id)
+    @Transactional(readOnly = true)
+    public UserResponse getAuthenticatedUser(UUID loggedUserId) {
+        User user = userRepository.findById(loggedUserId)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
         return new UserResponse(user);
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse findById(UUID id, UUID loggedUserId) {
+        if (!id.equals(loggedUserId)) {
+            throw new ForbiddenActionException("Você não tem permissão para acessar os dados deste usuário");
+        }
+        return getAuthenticatedUser(id);
     }
 }

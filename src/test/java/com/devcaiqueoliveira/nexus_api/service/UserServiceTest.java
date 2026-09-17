@@ -3,7 +3,10 @@ package com.devcaiqueoliveira.nexus_api.service;
 import com.devcaiqueoliveira.nexus_api.dto.UserRequest;
 import com.devcaiqueoliveira.nexus_api.dto.UserResponse;
 import com.devcaiqueoliveira.nexus_api.entity.User;
+import com.devcaiqueoliveira.nexus_api.exception.exceptions.DuplicateResourceException;
+import com.devcaiqueoliveira.nexus_api.exception.exceptions.ForbiddenActionException;
 import com.devcaiqueoliveira.nexus_api.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +19,7 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,7 +66,7 @@ public class UserServiceTest {
 
         when(userRepository.existsByEmail(request.email())).thenReturn(true);
 
-        assertThrows(com.devcaiqueoliveira.nexus_api.exception.exceptions.DuplicateResourceException.class, () -> {
+        assertThrows(DuplicateResourceException.class, () -> {
             userService.createUser(request);
         });
 
@@ -70,15 +74,45 @@ public class UserServiceTest {
     }
 
     @Test
-    @DisplayName("Deve buscar um usuário por ID com sucesso")
+    @DisplayName("Deve obter perfil do usuário autenticado com sucesso")
+    void getAuthenticatedUserTest() {
+        UUID id = UUID.randomUUID();
+        User user = new User("Teste", "teste@teste.com", "123456");
+        ReflectionTestUtils.setField(user, "id", id);
+
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
+
+        UserResponse response = userService.getAuthenticatedUser(id);
+
+        assertNotNull(response);
+        assertEquals(id, response.id());
+        assertEquals("Teste", response.name());
+        assertEquals("teste@teste.com", response.email());
+        verify(userRepository, times(1)).findById(id);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao buscar usuário autenticado inexistente no banco")
+    void getAuthenticatedUserNotFoundTest() {
+        UUID id = UUID.randomUUID();
+
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            userService.getAuthenticatedUser(id);
+        });
+    }
+
+    @Test
+    @DisplayName("Deve buscar um usuário pelo próprio ID com sucesso")
     void findByIdTest() {
         UUID id = UUID.randomUUID();
         User user = new User("Teste", "teste@teste.com", "123456");
         ReflectionTestUtils.setField(user, "id", id);
 
-        when(userRepository.findById(id)).thenReturn(java.util.Optional.of(user));
+        when(userRepository.findById(id)).thenReturn(Optional.of(user));
 
-        UserResponse response = userService.findById(id);
+        UserResponse response = userService.findById(id, id);
 
         assertNotNull(response);
         assertEquals(id, response.id());
@@ -87,14 +121,28 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Deve negar busca por ID pertencente a outro usuário")
+    void findByIdForbiddenTest() {
+        UUID targetId = UUID.randomUUID();
+        UUID loggedUserId = UUID.randomUUID();
+
+        ForbiddenActionException exception = assertThrows(ForbiddenActionException.class, () -> {
+            userService.findById(targetId, loggedUserId);
+        });
+
+        assertEquals("Você não tem permissão para acessar os dados deste usuário", exception.getMessage());
+        verify(userRepository, never()).findById(any());
+    }
+
+    @Test
     @DisplayName("Deve lançar exceção ao buscar usuário inexistente por ID")
     void findByIdNotFoundTest() {
         UUID id = UUID.randomUUID();
 
-        when(userRepository.findById(id)).thenReturn(java.util.Optional.empty());
+        when(userRepository.findById(id)).thenReturn(Optional.empty());
 
-        assertThrows(jakarta.persistence.EntityNotFoundException.class, () -> {
-            userService.findById(id);
+        assertThrows(EntityNotFoundException.class, () -> {
+            userService.findById(id, id);
         });
     }
 

@@ -73,7 +73,7 @@ public class StudySessionServiceTest {
 
         when(subjectRepository.findById(subjectId)).thenReturn(Optional.of(subject));
         when(studySessionRepository.existsBySubjectIdAndStatus(subjectId, StudySessionStatus.IN_PROGRESS)).thenReturn(false);
-        when(studySessionRepository.save(any(StudySession.class))).thenAnswer(invocation -> {
+        when(studySessionRepository.saveAndFlush(any(StudySession.class))).thenAnswer(invocation -> {
             StudySession saved = invocation.getArgument(0);
             ReflectionTestUtils.setField(saved, "id", UUID.randomUUID());
             ReflectionTestUtils.setField(saved, "status", StudySessionStatus.IN_PROGRESS);
@@ -84,7 +84,7 @@ public class StudySessionServiceTest {
 
         assertNotNull(response);
         assertEquals(StudySessionStatus.IN_PROGRESS, response.status());
-        verify(studySessionRepository, times(1)).save(any(StudySession.class));
+        verify(studySessionRepository, times(1)).saveAndFlush(any(StudySession.class));
     }
 
     @Test
@@ -117,6 +117,25 @@ public class StudySessionServiceTest {
             studySessionService.startSession(request, userId);
         });
         verify(studySessionRepository, never()).save(any(StudySession.class));
+    }
+
+    @Test
+    @DisplayName("Deve lançar IllegalStateException quando ocorrer concorrência e o banco disparar violação de integridade")
+    void startSessionDataIntegrityViolation() {
+        UUID userId = UUID.randomUUID();
+        UUID subjectId = UUID.randomUUID();
+        User user = createFakeUser(userId);
+        Subject subject = createFakeSubject(subjectId, user);
+        StudySessionStart request = new StudySessionStart(subjectId);
+
+        when(subjectRepository.findById(subjectId)).thenReturn(Optional.of(subject));
+        when(studySessionRepository.existsBySubjectIdAndStatus(subjectId, StudySessionStatus.IN_PROGRESS)).thenReturn(false);
+        when(studySessionRepository.saveAndFlush(any(StudySession.class)))
+                .thenThrow(new org.springframework.dao.DataIntegrityViolationException("Unique index violation"));
+
+        assertThrows(IllegalStateException.class, () -> {
+            studySessionService.startSession(request, userId);
+        });
     }
 
     @Test

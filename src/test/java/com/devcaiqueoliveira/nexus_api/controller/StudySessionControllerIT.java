@@ -2,6 +2,7 @@ package com.devcaiqueoliveira.nexus_api.controller;
 
 import com.devcaiqueoliveira.nexus_api.AbstractIntegrationTest;
 import com.devcaiqueoliveira.nexus_api.dto.AuthenticationRequest;
+import com.devcaiqueoliveira.nexus_api.dto.StudySessionStart;
 import com.devcaiqueoliveira.nexus_api.dto.SubjectRequest;
 import com.devcaiqueoliveira.nexus_api.dto.UserRequest;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class StudySessionControllerIT extends AbstractIntegrationTest {
@@ -29,6 +31,29 @@ class StudySessionControllerIT extends AbstractIntegrationTest {
                         .param("subjectId", subjectId.toString())
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + otherUserToken))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Deve rejeitar a criação de uma segunda sessão ativa para a mesma matéria")
+    void shouldRejectCreatingSecondActiveSessionForSameSubject() throws Exception {
+        String token = registerAndAuthenticate("student@nexus.test");
+        UUID subjectId = createSubject(token);
+
+        StudySessionStart sessionRequest = new StudySessionStart(subjectId);
+
+        mockMvc.perform(post("/api/study-sessions")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sessionRequest)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(
+                        "/api/study-sessions")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(sessionRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Já existe uma sessão de estudos vigente"));
     }
 
     private String registerAndAuthenticate(String email) throws Exception {

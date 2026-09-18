@@ -10,6 +10,7 @@ import com.devcaiqueoliveira.nexus_api.repository.StudySessionRepository;
 import com.devcaiqueoliveira.nexus_api.repository.SubjectRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,8 +40,12 @@ public class StudySessionService {
                 LocalDateTime.now()
         );
 
-        StudySession savedSession = studySessionRepository.save(studySession);
-        return new StudySessionResponse(savedSession);
+        try {
+            StudySession savedSession = studySessionRepository.saveAndFlush(studySession);
+            return new StudySessionResponse(savedSession);
+        } catch (DataIntegrityViolationException ex) {
+            throw new IllegalStateException("Já existe uma sessão de estudos vigente");
+        }
 
     }
 
